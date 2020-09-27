@@ -5,8 +5,10 @@ Vagrant.configure("2") do |config|
 
    config.vm.provider "virtualbox" do |vb|
      vb.gui = false
-     vb.memory = "2048"
+     vb.memory = "3096"
    end
+
+   config.vm.synced_folder "../../backend_project", "/backend_project"
 
     config.vm.define :masina_1 do |masina_1|
         masina_1.vm.network :private_network, ip: "10.0.0.10"
@@ -26,10 +28,16 @@ Vagrant.configure("2") do |config|
         masina_3.vm.synced_folder "../data_3", "/vagrant_data"
      end
 
-   config.vm.provision "shell", inline: <<-SHELL
+   config.vm.provision "update", type: "shell",  inline: <<-SHELL
      apt-get update
    SHELL
 
-   config.vm.provision "docker" , after: "shell" do |d|
+   config.vm.provision "docker" , after: "update" do |d|
    end
+
+   config.vm.provision "docker_login", type: "shell", after: "docker", inline: <<-SHELL
+      docker login --username=icosmin94 -p gigel007
+   SHELL
+   
+  
 end
