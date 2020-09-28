@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
 
      config.vm.define :masina_3 do |masina_3|
         masina_3.vm.network :private_network, ip: "10.0.0.12"
-        masina_3.vm.hostname = "masina2"
+        masina_3.vm.hostname = "masina3"
         masina_3.vm.synced_folder "../data_3", "/vagrant_data"
      end
 
