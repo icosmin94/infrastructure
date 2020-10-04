@@ -53,6 +53,10 @@ Vagrant.configure("2") do |config|
 	  cp /vagrant_data/zookeeper.service /etc/systemd/system/zookeeper.service
       systemctl start zookeeper
       systemctl enable zookeeper
+      cp /vagrant_data/server.properties /root/kafka/kafka_2.12-2.5.0/config
+      cp /vagrant_data/kafka.service /etc/systemd/system/kafka.service
+      systemctl start kafka
+      systemctl enable kafka
    SHELL
   
 end
