@@ -28,16 +28,31 @@ Vagrant.configure("2") do |config|
         masina_3.vm.synced_folder "../data_3", "/vagrant_data"
      end
 
-   config.vm.provision "update", type: "shell",  inline: <<-SHELL
+   config.vm.provision "install_stuff", type: "shell",  inline: <<-SHELL
      apt-get update
+	 apt-get -y install default-jre
    SHELL
 
-   config.vm.provision "docker" , after: "update" do |d|
+   config.vm.provision "docker" , after: "install_stuff" do |d|
    end
 
    config.vm.provision "docker_login", type: "shell", after: "docker", inline: <<-SHELL
       docker login --username=icosmin94 -p gigel007
    SHELL
    
+   config.vm.provision "install_kafka", type: "shell", after: "install_stuff", inline: <<-SHELL
+      cd /root
+	  mkdir kafka
+	  cd /root/kafka
+	  curl -k https://archive.apache.org/dist/kafka/2.5.0/kafka_2.12-2.5.0.tgz > kafka_2.12-2.5.0.tgz
+	  tar -xzf kafka_2.12-2.5.0.tgz
+	  rm kafka_2.12-2.5.0.tgz
+	  mkdir -p /root/kafka/data/zookeeper
+	  cp /vagrant_data/zookeeper.properties /root/kafka/kafka_2.12-2.5.0/config
+	  cp /vagrant_data/myid /root/kafka/data/zookeeper/
+	  cp /vagrant_data/zookeeper.service /etc/systemd/system/zookeeper.service
+      systemctl start zookeeper
+      systemctl enable zookeeper
+   SHELL
   
 end
