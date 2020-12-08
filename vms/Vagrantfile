@@ -14,6 +14,22 @@ Vagrant.configure("2") do |config|
         masina_1.vm.network :private_network, ip: "10.0.0.10"
         masina_1.vm.hostname = "masina1"
         masina_1.vm.synced_folder "../data_1", "/vagrant_data"
+        masina_1.vm.provision "install_kafka_manager", type: "shell", after: "install_kafka", inline: <<-SHELL
+            cd ~
+            mkdir kafka-manager
+            cd kafka-manager
+            wget https://github.com/yahoo/kafka-manager/archive/3.0.0.0.zip
+            unzip /root/kafka-manager/3.0.0.0.zip -d /root/kafka-manager/
+            rm /root/kafka-manager/3.0.0.0.zip
+            cd /root/kafka-manager/CMAK-3.0.0.0/
+            ./sbt clean dist
+            unzip /root/kafka-manager/CMAK-3.0.0.0/target/universal/cmak-3.0.0.0.zip -d /root/kafka-manager/
+            rm -rf /root/kafka-manager/CMAK-3.0.0.0
+            cp /vagrant_data/kafka_manager.conf /root/kafka-manager/cmak-3.0.0.0/conf/application.conf
+            cp /vagrant_data/kafka_manager.service /etc/systemd/system/kafka_manager.service
+            systemctl start kafka_manager
+            systemctl enable kafka_manager
+        SHELL
     end
 
     config.vm.define :masina_2 do |masina_2|
@@ -31,6 +47,7 @@ Vagrant.configure("2") do |config|
    config.vm.provision "install_stuff", type: "shell",  inline: <<-SHELL
      apt-get update
 	 apt-get -y install default-jre
+	 apt-get -y install zip
    SHELL
 
    config.vm.provision "docker" , after: "install_stuff" do |d|

@@ -1,0 +1,13 @@
+[Unit]
+Description=Kafka Manager Service
+After=kafka.service
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/root/kafka-manager/cmak-3.0.0.0/bin/cmak -Dhttp.port=9100 -Dconfig.file=/root/kafka-manager/cmak-3.0.0.0/conf/application.conf
+
+[Install]
+WantedBy=multi-user.target
