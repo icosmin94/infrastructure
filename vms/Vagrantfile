@@ -5,7 +5,6 @@ Vagrant.configure("2") do |config|
 
    config.vm.provider "virtualbox" do |vb|
      vb.gui = false
-     vb.memory = "3096"
    end
 
    config.vm.synced_folder "../../backend_project", "/backend_project"
@@ -14,34 +13,29 @@ Vagrant.configure("2") do |config|
         masina_1.vm.network :private_network, ip: "10.0.0.10"
         masina_1.vm.hostname = "masina1"
         masina_1.vm.synced_folder "../data_1", "/vagrant_data"
-        masina_1.vm.provision "install_kafka_manager", type: "shell", after: "install_kafka", inline: <<-SHELL
-            cd ~
-            mkdir kafka-manager
-            cd kafka-manager
-            wget https://github.com/yahoo/kafka-manager/archive/3.0.0.0.zip
-            unzip /root/kafka-manager/3.0.0.0.zip -d /root/kafka-manager/
-            rm /root/kafka-manager/3.0.0.0.zip
-            cd /root/kafka-manager/CMAK-3.0.0.0/
-            ./sbt clean dist
-            unzip /root/kafka-manager/CMAK-3.0.0.0/target/universal/cmak-3.0.0.0.zip -d /root/kafka-manager/
-            rm -rf /root/kafka-manager/CMAK-3.0.0.0
-            cp /vagrant_data/kafka_manager.conf /root/kafka-manager/cmak-3.0.0.0/conf/application.conf
-            cp /vagrant_data/kafka_manager.service /etc/systemd/system/kafka_manager.service
-            systemctl start kafka_manager
-            systemctl enable kafka_manager
-        SHELL
+        masina_1.vm.provider :virtualbox do |vb|
+               vb.customize ["modifyvm", :id, "--memory", "6192"]
+               vb.customize ["modifyvm", :id, "--cpus", "2"]
+        end
+        masina_1.vm.provision "install_kafka_manager", type: "shell", after: "install_kafka", path: "install_kafka_manager.sh"
     end
 
     config.vm.define :masina_2 do |masina_2|
         masina_2.vm.network :private_network, ip: "10.0.0.11"
         masina_2.vm.hostname = "masina2"
         masina_2.vm.synced_folder "../data_2", "/vagrant_data"
+        masina_2.vm.provider :virtualbox do |vb|
+           vb.customize ["modifyvm", :id, "--memory", "2048"]
+        end
     end
 
      config.vm.define :masina_3 do |masina_3|
         masina_3.vm.network :private_network, ip: "10.0.0.12"
         masina_3.vm.hostname = "masina3"
         masina_3.vm.synced_folder "../data_3", "/vagrant_data"
+        masina_3.vm.provider :virtualbox do |vb|
+            vb.customize ["modifyvm", :id, "--memory", "2048"]
+        end
      end
 
    config.vm.provision "install_stuff", type: "shell",  inline: <<-SHELL
@@ -57,23 +51,6 @@ Vagrant.configure("2") do |config|
       docker login --username=icosmin94 -p gigel007
    SHELL
    
-   config.vm.provision "install_kafka", type: "shell", after: "install_stuff", inline: <<-SHELL
-      cd /root
-	  mkdir kafka
-	  cd /root/kafka
-	  curl -k https://archive.apache.org/dist/kafka/2.5.0/kafka_2.12-2.5.0.tgz > kafka_2.12-2.5.0.tgz
-	  tar -xzf kafka_2.12-2.5.0.tgz
-	  rm kafka_2.12-2.5.0.tgz
-	  mkdir -p /root/kafka/data/zookeeper
-	  cp /vagrant_data/zookeeper.properties /root/kafka/kafka_2.12-2.5.0/config
-	  cp /vagrant_data/myid /root/kafka/data/zookeeper/
-	  cp /vagrant_data/zookeeper.service /etc/systemd/system/zookeeper.service
-      systemctl start zookeeper
-      systemctl enable zookeeper
-      cp /vagrant_data/server.properties /root/kafka/kafka_2.12-2.5.0/config
-      cp /vagrant_data/kafka.service /etc/systemd/system/kafka.service
-      systemctl start kafka
-      systemctl enable kafka
-   SHELL
+   config.vm.provision "install_kafka", type: "shell", after: "install_stuff", path: "install_kafka.sh"
   
 end
